@@ -2,12 +2,12 @@ import cv2
 import numpy as np
 
 # Load the video file
-cap = cv2.VideoCapture('C:\\Users\Egor\Projects\Speccurs_image_processing\\aging_videos\\recources\\test_video.mp4')
+cap = cv2.VideoCapture('C:\\Users\Egor\Projects\Speccurs_image_processing\\aging_videos\\recources\\test.mp4')
 
 # Define the output video writer
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(
-    'C:\\Users\Egor\Projects\Speccurs_image_processing\\aging_videos\\recources\output_video2.mp4', 
+    'C:\\Users\Egor\Projects\Speccurs_image_processing\\aging_videos\\recources\output_test.mp4', 
     fourcc, 
     30.0, 
     (int(cap.get(3)), int(cap.get(4)))
@@ -25,16 +25,16 @@ while True:
     frame_sepia = cv2.convertScaleAbs(frame_sepia)
 
     # Add noise to the frame
-    # noise = np.random.normal(0, 25, frame.shape)
-    # noise_clipped = np.clip(noise, 0, 255).astype(np.uint8)
-    # frame_noisy = cv2.add(frame_sepia, noise_clipped)    
+    noise = np.random.normal(0, 25, frame.shape)
+    noise_clipped = np.clip(noise, 0, 255).astype(np.uint8)
+    frame_noisy = cv2.add(frame_sepia, noise_clipped)    
 
     # Apply a Gaussian blur to the frame
     frame_blurred = cv2.GaussianBlur(frame_sepia, (5, 5), 0)
 
     # Add some scratches to the frame
     scratches = np.random.randint(0, 255, frame.shape[:2], dtype=np.uint8)
-    scratches = cv2.threshold(scratches, 80, 255, cv2.THRESH_BINARY)[1]
+    scratches = cv2.threshold(scratches, 50, 255, cv2.THRESH_BINARY)[1]
     scratches = cv2.resize(scratches, (frame_blurred.shape[1], frame_blurred.shape[0]))
     
     frame_scratched = cv2.bitwise_and(frame_blurred, frame_blurred, mask=scratches)
