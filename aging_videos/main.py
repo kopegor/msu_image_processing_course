@@ -7,7 +7,7 @@ cap = cv2.VideoCapture('C:\\Users\Egor\Projects\Speccurs_image_processing\\aging
 # Define the output video writer
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(
-    'C:\\Users\Egor\Projects\Speccurs_image_processing\\aging_videos\\recources\output_test.mp4', 
+    'C:\\Users\Egor\Projects\Speccurs_image_processing\\aging_videos\\recources\output_test2.mp4', 
     fourcc, 
     30.0, 
     (int(cap.get(3)), int(cap.get(4)))
@@ -26,11 +26,27 @@ while True:
 
     # Add noise to the frame
     noise = np.random.normal(0, 25, frame.shape)
+
+    # Simulate a shaky camera by applying random translations and rotations
+    rows, cols = frame.shape[:2]
+    dx = np.random.randint(-7, 7)
+    dy = np.random.randint(-7, 7)
+    angle = np.random.uniform(-3, 3)  # small random rotation
+    M_translation = np.float32([[1, 0, dx], [0, 1, dy]])
+    center = (cols / 2, rows / 2)
+    M_rotation = cv2.getRotationMatrix2D(center, angle, 1.0)
+
+    # print(M_translation.shape, M_rotation.shape)
+    # M = np.matmul(M_translation.T, M_rotation)
+    
+    frame_shaky = cv2.warpAffine(frame_sepia, M_rotation, (cols, rows))
+    frame_shaky = cv2.warpAffine(frame_shaky, M_translation, (cols, rows))
+
     noise_clipped = np.clip(noise, 0, 255).astype(np.uint8)
-    frame_noisy = cv2.add(frame_sepia, noise_clipped)    
+    frame_noisy = cv2.add(frame_shaky, noise_clipped)    
 
     # Apply a Gaussian blur to the frame
-    frame_blurred = cv2.GaussianBlur(frame_sepia, (5, 5), 0)
+    frame_blurred = cv2.GaussianBlur(frame_noisy, (5, 5), 0)
 
     # Add some scratches to the frame
     scratches = np.random.randint(0, 255, frame.shape[:2], dtype=np.uint8)
@@ -42,9 +58,9 @@ while True:
     # Write the transformed frame to the output video
     out.write(frame_scratched)
 
-    cv2.imshow('frame', frame_scratched)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    # cv2.imshow('frame', frame_scratched)
+    # if cv2.waitKey(1) & 0xFF == ord('q'):
+    #     break
 
 cap.release()
 out.release()
